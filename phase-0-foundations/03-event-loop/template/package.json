@@ -1,0 +1,13 @@
+{
+  "name": "@studyplan/phase0-event-loop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Practice 03: event loop ordering, concurrency-limited task runner, and cooperative yielding.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=26"
+  }
+}
