@@ -1,0 +1,13 @@
+{
+  "name": "@studyplan/phase4-cqrs-notifications",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Practice 21: a CQRS read-model projection and a deduplicated notifications service, built from a replayable event stream.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=26"
+  }
+}

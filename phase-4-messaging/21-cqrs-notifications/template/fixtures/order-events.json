@@ -1,0 +1,74 @@
+[
+  {
+    "id": "evt-001",
+    "orderId": "order-1",
+    "type": "OrderCreated",
+    "version": 1,
+    "occurredAt": "2026-01-10T10:00:00.000Z",
+    "data": { "customerId": "customer-a" }
+  },
+  {
+    "id": "evt-002",
+    "orderId": "order-1",
+    "type": "OrderItemAdded",
+    "version": 2,
+    "occurredAt": "2026-01-10T10:01:00.000Z",
+    "data": { "unitPriceCents": 1500, "quantity": 2 }
+  },
+  {
+    "id": "evt-003",
+    "orderId": "order-1",
+    "type": "OrderConfirmed",
+    "version": 3,
+    "occurredAt": "2026-01-10T10:02:00.000Z",
+    "data": {}
+  },
+  {
+    "id": "evt-004",
+    "orderId": "order-2",
+    "type": "OrderCreated",
+    "version": 1,
+    "occurredAt": "2026-01-10T11:00:00.000Z",
+    "data": { "customerId": "customer-b" }
+  },
+  {
+    "id": "evt-005",
+    "orderId": "order-2",
+    "type": "OrderCancelled",
+    "version": 2,
+    "occurredAt": "2026-01-10T11:05:00.000Z",
+    "data": { "reason": "customer changed their mind" }
+  },
+  {
+    "id": "evt-006",
+    "orderId": "order-3",
+    "type": "OrderCreated",
+    "version": 1,
+    "occurredAt": "2026-01-10T12:00:00.000Z",
+    "data": { "customerId": "customer-c" }
+  },
+  {
+    "id": "evt-007",
+    "orderId": "order-3",
+    "type": "OrderItemAdded",
+    "version": 2,
+    "occurredAt": "2026-01-10T12:01:00.000Z",
+    "data": { "unitPriceCents": 2000, "quantity": 1 }
+  },
+  {
+    "id": "evt-008",
+    "orderId": "order-3",
+    "type": "OrderItemAdded",
+    "version": 3,
+    "occurredAt": "2026-01-10T12:02:00.000Z",
+    "data": { "unitPriceCents": 500, "quantity": 4 }
+  },
+  {
+    "id": "evt-009",
+    "orderId": "order-3",
+    "type": "OrderConfirmed",
+    "version": 4,
+    "occurredAt": "2026-01-10T12:03:00.000Z",
+    "data": {}
+  }
+]

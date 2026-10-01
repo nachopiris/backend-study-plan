@@ -50,8 +50,8 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
 | T1 | Scaffold (root README, shared templates) + Phase 0 practices 01-05 | delegated writer | writer trigger: 2+ non-trivial files | done | c5dc06c |
 | T2 | Phase 1 practices 06-10 (data systems) | delegated writer | writer trigger | done | a407231 |
 | T3 | Phase 2 practices 11-13 (distributed theory) | delegated writer | writer trigger | done | 02ab02c |
-| T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | done | see T4 evidence |
-| T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | pending | |
+| T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | done | 756ad1a |
+| T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | done | see T5 evidence |
 | T6 | Phase 5 practices 22-25 (microservices) | delegated writer | writer trigger | pending | |
 | T7 | Phase 6 practices 26-27 (observability) + final index check | delegated writer | writer trigger | pending | |
 
@@ -110,6 +110,15 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
   Ports 14: 5450, 8474, 15450, 18450. 16 TS tests carry explicit per-test timeouts so RED never hangs.
   Review: RDD off -> disabled/unmanaged.
 
+- T5 (delegated writer): 18 (real apache/kafka:3.9.0 KRaft via compose driven by TestMain, port 19092),
+  19 (testcontainers Postgres), 20 (deterministic in-memory bus, GREEN stable at -count=20), 21 (TS) all RED on
+  stubs and GREEN with deleted scratch solutions. Parent spot check: 20 `go vet` clean + 5 FAIL; 21 tests 7 / fail 7;
+  no leftover practice containers (only the user's pre-existing Supabase and mongo containers).
+  Accepted decisions: 18 uses compose because testcontainers' kafka module only accepts confluent-local; 19 fake
+  publisher has a documented 5ms delay so the concurrent-relay test reliably catches a missing SKIP LOCKED;
+  21 fixture helper lives in support/ because node --test treats every file under test/ as a test.
+  Review: RDD off -> disabled/unmanaged.
+
 ## Next step
 
-T5.
+T6.
