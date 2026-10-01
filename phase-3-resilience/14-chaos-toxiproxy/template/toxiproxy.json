@@ -1,0 +1,14 @@
+[
+  {
+    "name": "postgres",
+    "listen": "0.0.0.0:15432",
+    "upstream": "postgres:5432",
+    "enabled": true
+  },
+  {
+    "name": "payment",
+    "listen": "0.0.0.0:18080",
+    "upstream": "payment-provider:9090",
+    "enabled": true
+  }
+]

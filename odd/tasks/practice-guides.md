@@ -49,8 +49,8 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
 |----|------|-------|------------------|--------|--------|
 | T1 | Scaffold (root README, shared templates) + Phase 0 practices 01-05 | delegated writer | writer trigger: 2+ non-trivial files | done | c5dc06c |
 | T2 | Phase 1 practices 06-10 (data systems) | delegated writer | writer trigger | done | a407231 |
-| T3 | Phase 2 practices 11-13 (distributed theory) | delegated writer | writer trigger | done | see T3 evidence |
-| T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | pending | |
+| T3 | Phase 2 practices 11-13 (distributed theory) | delegated writer | writer trigger | done | 02ab02c |
+| T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | done | see T4 evidence |
 | T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | pending | |
 | T6 | Phase 5 practices 22-25 (microservices) | delegated writer | writer trigger | pending | |
 | T7 | Phase 6 practices 26-27 (observability) + final index check | delegated writer | writer trigger | pending | |
@@ -102,6 +102,14 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
   test. SKIPPED: shellcheck (not installed). Parent spot check: 11 `go vet` clean + 13 FAIL; run-many `bash -n` ok.
   Review: RDD off -> disabled/unmanaged.
 
+- T4 (delegated writer): 15, 16 (Go + TS/cockatiel ^4), 17 RED on stubs, GREEN with deleted scratch solutions
+  under -race / node --test; 14 run for real via compose (naive service 2.016s > 1.5s budget = RED; scratch fix
+  1.22s = GREEN), stack torn down; k6 script exercised via grafana/k6 container. Parent spot check: 15 `go vet`
+  clean + 11 FAIL lines; no node_modules in repo; no leftover practice containers.
+  Convention deviation (accepted): 14's RED is a working-but-naive service failing a latency budget, not a stub.
+  Ports 14: 5450, 8474, 15450, 18450. 16 TS tests carry explicit per-test timeouts so RED never hangs.
+  Review: RDD off -> disabled/unmanaged.
+
 ## Next step
 
-T4.
+T5.
