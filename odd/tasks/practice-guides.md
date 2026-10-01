@@ -53,7 +53,7 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
 | T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | done | 756ad1a |
 | T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | done | aed681d |
 | T6 | Phase 5 practices 22-25 (microservices) | delegated writer | writer trigger | done | 4ab41fc |
-| T7 | Phase 6 practices 26-27 (observability) + final index check | delegated writer | writer trigger | done | see final commit |
+| T7 | Phase 6 practices 26-27 (observability) + final index check | delegated writer | writer trigger | done | 21cb218 |
 
 ### Practice list
 
@@ -133,8 +133,8 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
   stubs, GREEN with deleted scratch solutions; `promtool check rules` SUCCESS (40 rules); otel-lgtm stack started
   for real and a span confirmed in Tempo, then torn down. Root README: stale "created later" note removed,
   4 type labels corrected (10, 14, 18, 19), tools-per-practice table added.
-  Parent final audit: 27 practices, 0 missing README/NOTES/template; 27 index links, 0 broken; 27 `go vet` clean
-  + FAIL lines present; no leftover practice containers.
+  Parent final audit: 27 practices, 0 missing README/NOTES/template; 27 index links, 0 broken; practice 27 Go
+  `go vet` clean + FAIL lines present; no leftover practice containers.
   Review: RDD off -> disabled/unmanaged.
 
 ## Next step
