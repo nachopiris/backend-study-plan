@@ -95,16 +95,16 @@ Plantillas compartidas:
 | 07 | 1. Data systems | 5 | [zero-downtime-migrations](phase-1-data-systems/07-zero-downtime-migrations/README.md) | Go + Postgres |
 | 08 | 1. Data systems | 6 | [replication-lag](phase-1-data-systems/08-replication-lag/README.md) | Go + Postgres |
 | 09 | 1. Data systems | 7 | [partitioning-design](phase-1-data-systems/09-partitioning-design/README.md) | Worksheet |
-| 10 | 1. Data systems | 8 | [concurrent-checkout](phase-1-data-systems/10-concurrent-checkout/README.md) | Go |
+| 10 | 1. Data systems | 8 | [concurrent-checkout](phase-1-data-systems/10-concurrent-checkout/README.md) | Go + Postgres |
 | 11 | 2. Distributed theory | 9 | [logical-clocks](phase-2-distributed-theory/11-logical-clocks/README.md) | Go |
 | 12 | 2. Distributed theory | 10 | [consistency-models](phase-2-distributed-theory/12-consistency-models/README.md) | Worksheet |
 | 13 | 2. Distributed theory | 11-12 | [raft](phase-2-distributed-theory/13-raft/README.md) | Guía (MIT 6.5840) |
-| 14 | 3. Resilience | 13 | [chaos-toxiproxy](phase-3-resilience/14-chaos-toxiproxy/README.md) | Go |
+| 14 | 3. Resilience | 13 | [chaos-toxiproxy](phase-3-resilience/14-chaos-toxiproxy/README.md) | Go + Postgres |
 | 15 | 3. Resilience | 14 | [retries-idempotency](phase-3-resilience/15-retries-idempotency/README.md) | Go |
 | 16 | 3. Resilience | 15 | [circuit-breaker-bulkhead](phase-3-resilience/16-circuit-breaker-bulkhead/README.md) | Go + TypeScript |
 | 17 | 3. Resilience | 16 | [load-protection](phase-3-resilience/17-load-protection/README.md) | Go + k6 |
-| 18 | 4. Messaging | 17 | [kafka-basics](phase-4-messaging/18-kafka-basics/README.md) | Go |
-| 19 | 4. Messaging | 18 | [outbox-idempotent-consumer](phase-4-messaging/19-outbox-idempotent-consumer/README.md) | Go |
+| 18 | 4. Messaging | 17 | [kafka-basics](phase-4-messaging/18-kafka-basics/README.md) | Go + Kafka |
+| 19 | 4. Messaging | 18 | [outbox-idempotent-consumer](phase-4-messaging/19-outbox-idempotent-consumer/README.md) | Go + Postgres |
 | 20 | 4. Messaging | 19 | [choreographed-saga](phase-4-messaging/20-choreographed-saga/README.md) | Go |
 | 21 | 4. Messaging | 20 | [cqrs-notifications](phase-4-messaging/21-cqrs-notifications/README.md) | TypeScript |
 | 22 | 5. Microservices | 21 | [service-boundaries](phase-5-microservices/22-service-boundaries/README.md) | ADR / Worksheet |
@@ -112,7 +112,49 @@ Plantillas compartidas:
 | 24 | 5. Microservices | 23 | [bff-contract-testing](phase-5-microservices/24-bff-contract-testing/README.md) | TypeScript + Pact |
 | 25 | 5. Microservices | 24 | [local-kubernetes](phase-5-microservices/25-local-kubernetes/README.md) | Guía práctica |
 | 26 | 6. Observability | 25 | [telemetry-otel](phase-6-observability/26-telemetry-otel/README.md) | Go + TypeScript |
-| 27 | 6. Observability | 26 | [slos-game-day](phase-6-observability/27-slos-game-day/README.md) | Worksheet |
+| 27 | 6. Observability | 26 | [slos-game-day](phase-6-observability/27-slos-game-day/README.md) | Worksheet + Go |
 
-> Las prácticas de fases 1 a 6 se crean en tareas posteriores del mismo esfuerzo; sus enlaces
-> están listos para cuando existan.
+## Herramientas por práctica
+
+Qué infraestructura externa (más allá del lenguaje en sí) pone en juego cada práctica, para que
+sepas de antemano qué vas a necesitar tener instalado o corriendo. "Docker" cubre tanto
+`docker compose` como contenedores levantados por `testcontainers-go`.
+
+| # | Práctica | Docker | Kafka | Dependencias npm | k6 | kind/k3d |
+|---|----------|:------:|:-----:|:-----------------:|:--:|:--------:|
+| 01 | request-anatomy | | | | | |
+| 02 | worker-pool-context | | | | | |
+| 03 | event-loop | | | Sí | | |
+| 04 | isolation-anomalies | Sí | | | | |
+| 05 | modular-monolith | | | | | |
+| 06 | data-modeling-indexes | Sí | | | | |
+| 07 | zero-downtime-migrations | Sí | | | | |
+| 08 | replication-lag | Sí | | | | |
+| 09 | partitioning-design | | | | | |
+| 10 | concurrent-checkout | Sí | | | | |
+| 11 | logical-clocks | | | | | |
+| 12 | consistency-models | | | | | |
+| 13 | raft | | | | | |
+| 14 | chaos-toxiproxy | Sí | | | | |
+| 15 | retries-idempotency | | | | | |
+| 16 | circuit-breaker-bulkhead | | | Sí | | |
+| 17 | load-protection | Sí | | | Sí | |
+| 18 | kafka-basics | Sí | Sí | | | |
+| 19 | outbox-idempotent-consumer | Sí | | | | |
+| 20 | choreographed-saga | | | | | |
+| 21 | cqrs-notifications | | | Sí | | |
+| 22 | service-boundaries | | | | | |
+| 23 | strangler-grpc | Opcional | | | | |
+| 24 | bff-contract-testing | | | Sí | | |
+| 25 | local-kubernetes | Sí | | | | Sí |
+| 26 | telemetry-otel | Sí | | Sí | | |
+| 27 | slos-game-day | Sí | | | | |
+
+- **Docker** en 23 (strangler-grpc) es opcional: alternativa a instalar `buf` localmente, no un
+  requisito de la práctica en sí.
+- **Kafka** en 26 (telemetry-otel) aparece solo como formato de datos (headers de mensaje, en
+  `carrier.go`) — esa práctica no levanta un broker real; el único broker real del plan es el de
+  la práctica 18.
+- **Docker** en 25 (local-kubernetes) y en 27 (slos-game-day) cubre, respectivamente, construir la
+  imagen del servicio (`Dockerfile`) y validar manifiestos con `kubeconform`, y correr `promtool`
+  — ninguna de las dos levanta un contenedor de larga duración como las que usan Postgres o Kafka.

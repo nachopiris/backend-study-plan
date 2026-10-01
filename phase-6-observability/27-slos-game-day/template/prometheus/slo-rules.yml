@@ -1,0 +1,184 @@
+# Recording rules and multiwindow, multi-burn-rate alerting rules for the checkout flow's two
+# SLIs (availability and latency) — see ../slo-definition.md for the SLO targets and the error
+# budget math these rules assume (99.9% availability, 99% of requests under 300ms, both measured
+# over a rolling 30-day window). The approach follows the Google SRE Workbook, chapter 5
+# ("Alerting on SLOs"): https://sre.google/workbook/alerting-on-slos/
+#
+# Validate this file with promtool (no real Prometheus server needed):
+#   docker run --rm -v "$PWD:/rules" prom/prometheus:latest \
+#     promtool check rules /rules/slo-rules.yml
+#
+# TODO markers below are deliberate: the window/threshold table (1h/5m at 14.4x, 6h/30m at 6x,
+# 1d/2h at 3x, 3d/6h at 1x) is the SRE Workbook's own reference table for a 99.9% SLO. If your own
+# slo-definition.md lands on a different target (your error budget table will tell you), the
+# BURN RATE thresholds below need to be recalculated for your target — the formula is
+# threshold = (budget fraction consumed) * (compliance window / long window), and this file's
+# ../../../phase-6-observability/26-telemetry-otel sibling practice's slo.go-equivalent
+# (BurnRate/ShouldPage) is exactly this arithmetic, implemented and tested in Go.
+groups:
+  - name: checkout-slo-recording
+    rules:
+      # --- Availability SLI: fraction of requests that did NOT return a 5xx. ---
+      - record: checkout:requests:rate5m
+        expr: sum(rate(http_requests_total{job="checkout"}[5m]))
+      - record: checkout:requests:rate30m
+        expr: sum(rate(http_requests_total{job="checkout"}[30m]))
+      - record: checkout:requests:rate1h
+        expr: sum(rate(http_requests_total{job="checkout"}[1h]))
+      - record: checkout:requests:rate2h
+        expr: sum(rate(http_requests_total{job="checkout"}[2h]))
+      - record: checkout:requests:rate6h
+        expr: sum(rate(http_requests_total{job="checkout"}[6h]))
+      - record: checkout:requests:rate1d
+        expr: sum(rate(http_requests_total{job="checkout"}[1d]))
+      - record: checkout:requests:rate3d
+        expr: sum(rate(http_requests_total{job="checkout"}[3d]))
+
+      - record: checkout:errors:rate5m
+        expr: sum(rate(http_requests_total{job="checkout",status=~"5.."}[5m]))
+      - record: checkout:errors:rate30m
+        expr: sum(rate(http_requests_total{job="checkout",status=~"5.."}[30m]))
+      - record: checkout:errors:rate1h
+        expr: sum(rate(http_requests_total{job="checkout",status=~"5.."}[1h]))
+      - record: checkout:errors:rate2h
+        expr: sum(rate(http_requests_total{job="checkout",status=~"5.."}[2h]))
+      - record: checkout:errors:rate6h
+        expr: sum(rate(http_requests_total{job="checkout",status=~"5.."}[6h]))
+      - record: checkout:errors:rate1d
+        expr: sum(rate(http_requests_total{job="checkout",status=~"5.."}[1d]))
+      - record: checkout:errors:rate3d
+        expr: sum(rate(http_requests_total{job="checkout",status=~"5.."}[3d]))
+
+      # error_ratio:WINDOW = fraction of requests that failed over WINDOW (the "errorRate" input
+      # to BurnRate in slo.go). Guarded against a 0/0 division when there is no traffic at all.
+      - record: checkout:availability_error_ratio:rate5m
+        expr: checkout:errors:rate5m / checkout:requests:rate5m
+      - record: checkout:availability_error_ratio:rate30m
+        expr: checkout:errors:rate30m / checkout:requests:rate30m
+      - record: checkout:availability_error_ratio:rate1h
+        expr: checkout:errors:rate1h / checkout:requests:rate1h
+      - record: checkout:availability_error_ratio:rate2h
+        expr: checkout:errors:rate2h / checkout:requests:rate2h
+      - record: checkout:availability_error_ratio:rate6h
+        expr: checkout:errors:rate6h / checkout:requests:rate6h
+      - record: checkout:availability_error_ratio:rate1d
+        expr: checkout:errors:rate1d / checkout:requests:rate1d
+      - record: checkout:availability_error_ratio:rate3d
+        expr: checkout:errors:rate3d / checkout:requests:rate3d
+
+      # burn_rate:WINDOW = availability_error_ratio:WINDOW / (1 - SLO). SLO = 0.999 here —
+      # TODO: replace 0.001 (= 1 - SLO) below if slo-definition.md lands on a different target.
+      - record: checkout:availability_burn_rate:rate5m
+        expr: checkout:availability_error_ratio:rate5m / 0.001
+      - record: checkout:availability_burn_rate:rate30m
+        expr: checkout:availability_error_ratio:rate30m / 0.001
+      - record: checkout:availability_burn_rate:rate1h
+        expr: checkout:availability_error_ratio:rate1h / 0.001
+      - record: checkout:availability_burn_rate:rate2h
+        expr: checkout:availability_error_ratio:rate2h / 0.001
+      - record: checkout:availability_burn_rate:rate6h
+        expr: checkout:availability_error_ratio:rate6h / 0.001
+      - record: checkout:availability_burn_rate:rate1d
+        expr: checkout:availability_error_ratio:rate1d / 0.001
+      - record: checkout:availability_burn_rate:rate3d
+        expr: checkout:availability_error_ratio:rate3d / 0.001
+
+      # --- Latency SLI: fraction of requests slower than the target (TODO: confirm 0.3s against
+      # your own slo-definition.md latency target — this assumes "99% of requests under 300ms").
+      # http_request_duration_seconds_bucket is the histogram ServerMiddleware's duration
+      # histogram (practice 26) would export once a Prometheus exporter is wired to it; this rule
+      # file does not depend on practice 26's code, only on a histogram with that metric name.
+      - record: checkout:latency_good:rate5m
+        expr: sum(rate(http_request_duration_seconds_bucket{job="checkout",le="0.3"}[5m]))
+      - record: checkout:latency_total:rate5m
+        expr: sum(rate(http_request_duration_seconds_count{job="checkout"}[5m]))
+      - record: checkout:latency_error_ratio:rate5m
+        expr: 1 - (checkout:latency_good:rate5m / checkout:latency_total:rate5m)
+      - record: checkout:latency_good:rate1h
+        expr: sum(rate(http_request_duration_seconds_bucket{job="checkout",le="0.3"}[1h]))
+      - record: checkout:latency_total:rate1h
+        expr: sum(rate(http_request_duration_seconds_count{job="checkout"}[1h]))
+      - record: checkout:latency_error_ratio:rate1h
+        expr: 1 - (checkout:latency_good:rate1h / checkout:latency_total:rate1h)
+      # Latency SLO target is 99% here (looser than availability's 99.9%) -> 1 - SLO = 0.01.
+      # TODO: recompute if your own latency SLO target differs.
+      - record: checkout:latency_burn_rate:rate5m
+        expr: checkout:latency_error_ratio:rate5m / 0.01
+      - record: checkout:latency_burn_rate:rate1h
+        expr: checkout:latency_error_ratio:rate1h / 0.01
+
+  - name: checkout-slo-alerts
+    rules:
+      # Multiwindow, multi-burn-rate table (SRE Workbook, 99.9% SLO reference values):
+      #   severity | long window | long threshold | short window | short threshold | budget/window
+      #   page     | 1h          | 14.4            | 5m           | 14.4            | 2% in 1h
+      #   page     | 6h          | 6               | 30m          | 6               | 5% in 6h
+      #   ticket   | 1d          | 3               | 2h           | 3               | 10% in 1d
+      #   ticket   | 3d          | 1               | 6h           | 1               | 10% in 3d
+      # Both windows must exceed the threshold at once (see slo.go's ShouldPage): the long window
+      # confirms the burn is serious and sustained, the short window confirms it is STILL
+      # happening right now, so the alert clears quickly once the underlying issue is fixed.
+      - alert: CheckoutAvailabilityFastBurn
+        expr: |
+          checkout:availability_burn_rate:rate1h >= 14.4
+          and
+          checkout:availability_burn_rate:rate5m >= 14.4
+        for: 2m
+        labels:
+          severity: page
+          slo: checkout-availability
+        annotations:
+          summary: "Checkout availability error budget is burning 14.4x faster than sustainable"
+          description: >-
+            At this rate the 30-day error budget would be exhausted in ~2 days. 1h and 5m burn
+            rates are both >= 14.4x. See game-day-runbook.md for the on-call response.
+
+      - alert: CheckoutAvailabilitySlowBurn
+        expr: |
+          checkout:availability_burn_rate:rate6h >= 6
+          and
+          checkout:availability_burn_rate:rate30m >= 6
+        for: 15m
+        labels:
+          severity: page
+          slo: checkout-availability
+        annotations:
+          summary: "Checkout availability error budget is burning 6x faster than sustainable"
+          description: >-
+            6h and 30m burn rates are both >= 6x — roughly 5% of the 30-day budget consumed in
+            this one 6h window.
+
+      - alert: CheckoutAvailabilityBudgetAtRisk
+        expr: |
+          checkout:availability_burn_rate:rate1d >= 3
+          and
+          checkout:availability_burn_rate:rate2h >= 3
+        for: 1h
+        labels:
+          severity: ticket
+          slo: checkout-availability
+        annotations:
+          summary: "Checkout availability error budget trending toward exhaustion (3x burn)"
+          description: >-
+            1d and 2h burn rates are both >= 3x. Not urgent enough to page, but worth a ticket
+            before the slow-burn alert fires.
+
+      # TODO: this practice's game day (see game-day-runbook.md) is scoped to exercising the
+      # FAST-BURN page alert above end to end; the slow-burn/ticket-tier alerts and the latency
+      # SLI's own multiwindow table (mirroring the structure above, using
+      # checkout:latency_burn_rate:rateX instead of availability) are given here as a template —
+      # extend them yourself as a "para ir más allá" exercise (see the README).
+      - alert: CheckoutLatencyFastBurn
+        expr: |
+          checkout:latency_burn_rate:rate1h >= 14.4
+          and
+          checkout:latency_burn_rate:rate5m >= 14.4
+        for: 2m
+        labels:
+          severity: page
+          slo: checkout-latency
+        annotations:
+          summary: "Checkout p99 latency error budget is burning 14.4x faster than sustainable"
+          description: >-
+            Too many requests are exceeding the 300ms latency target. 1h and 5m burn rates are
+            both >= 14.4x.
