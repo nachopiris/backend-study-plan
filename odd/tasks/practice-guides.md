@@ -48,8 +48,8 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
 | ID | Task | Route | Trigger evidence | Status | Commit |
 |----|------|-------|------------------|--------|--------|
 | T1 | Scaffold (root README, shared templates) + Phase 0 practices 01-05 | delegated writer | writer trigger: 2+ non-trivial files | done | c5dc06c |
-| T2 | Phase 1 practices 06-10 (data systems) | delegated writer | writer trigger | done | see T2 evidence |
-| T3 | Phase 2 practices 11-13 (distributed theory) | delegated writer | writer trigger | pending | |
+| T2 | Phase 1 practices 06-10 (data systems) | delegated writer | writer trigger | done | a407231 |
+| T3 | Phase 2 practices 11-13 (distributed theory) | delegated writer | writer trigger | done | see T3 evidence |
 | T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | pending | |
 | T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | pending | |
 | T6 | Phase 5 practices 22-25 (microservices) | delegated writer | writer trigger | pending | |
@@ -96,6 +96,12 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
   Compose host ports: 06=5434, 07=5435, 10=5436, 08=5440/5441.
   Review: RDD off -> disabled/unmanaged.
 
+- T3 (delegated writer): 11 RED 13/15 fail (2 pass by design), GREEN 15/15 with deleted scratch solution;
+  12 RED 5/8 fail (3 "want false" pass by design), GREEN 8/8; worksheet histories checked against a
+  scratch-only answer key. 13: no stub code; run-many.sh `bash -n` clean, exercised against a flaky scratch
+  test. SKIPPED: shellcheck (not installed). Parent spot check: 11 `go vet` clean + 13 FAIL; run-many `bash -n` ok.
+  Review: RDD off -> disabled/unmanaged.
+
 ## Next step
 
-T3.
+T4.
