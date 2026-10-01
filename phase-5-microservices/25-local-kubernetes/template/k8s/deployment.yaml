@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8sservice
+  labels:
+    app: k8sservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: k8sservice
+  template:
+    metadata:
+      labels:
+        app: k8sservice
+    spec:
+      # TODO: this must stay comfortably ABOVE the service's own gracePeriod constant
+      # (cmd/service/main.go) plus the preStop delay below. Kubernetes sends SIGKILL
+      # unconditionally once this deadline passes, no matter what the process is doing — if this
+      # value is too low, graceful shutdown never gets the time it asked for. Run the
+      # "kill a pod" experiment (experiments.md) with a couple of different values and record
+      # what you observe.
+      terminationGracePeriodSeconds: 15
+      containers:
+        - name: k8sservice
+          # TODO: built locally and loaded into your cluster — this is NOT pulled from a
+          # registry. See the README for `docker build` + `kind load docker-image` / `k3d image
+          # import`, and set `imagePullPolicy: Never` (or `IfNotPresent`) accordingly, since
+          # there is nothing to pull.
+          image: k8sservice:dev
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: k8sservice-config
+                  key: addr
+          # TODO: these are starting guesses, not measured values. Run the load-test experiment
+          # (experiments.md) and adjust requests to what the service actually uses at your test
+          # load, and limits to a ceiling you're comfortable with — a limit far above the
+          # request wastes scheduling headroom; a request far below real usage causes
+          # overcommitted nodes.
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "200m"
+              memory: "64Mi"
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 2
+            failureThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                # TODO: this delay exists to close the gap between "the pod is marked
+                # Terminating" and "kube-proxy/endpoints have actually stopped sending new
+                # traffic here" — without it, GracefulShutdown can start draining before the
+                # cluster has stopped routing to this pod, and new connections can briefly hit a
+                # pod that already considers itself unready. Tune this value (or justify
+                # removing it) using the "rolling update under load" experiment.
+                command: ["sleep", "3"]

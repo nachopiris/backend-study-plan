@@ -51,8 +51,8 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
 | T2 | Phase 1 practices 06-10 (data systems) | delegated writer | writer trigger | done | a407231 |
 | T3 | Phase 2 practices 11-13 (distributed theory) | delegated writer | writer trigger | done | 02ab02c |
 | T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | done | 756ad1a |
-| T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | done | see T5 evidence |
-| T6 | Phase 5 practices 22-25 (microservices) | delegated writer | writer trigger | pending | |
+| T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | done | aed681d |
+| T6 | Phase 5 practices 22-25 (microservices) | delegated writer | writer trigger | done | see T6 evidence |
 | T7 | Phase 6 practices 26-27 (observability) + final index check | delegated writer | writer trigger | pending | |
 
 ### Practice list
@@ -119,6 +119,16 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
   21 fixture helper lives in support/ because node --test treats every file under test/ as a test.
   Review: RDD off -> disabled/unmanaged.
 
+- T6 (delegated writer): 22, 23 (real `buf generate`, generated code committed), 24 (Pact native lib works on
+  linux x64; real consumer pacts + Pact JS Verifier against the Go provider, breaking-change failure observed),
+  25 (image built + smoke-tested; manifests validated with kubeconform via Docker) all RED on stubs and GREEN
+  with deleted scratch solutions. SKIPPED: running a real kind/k3d cluster (neither installed).
+  Parent spot check: 23 `go vet` clean + FAIL lines present; no node_modules/pacts dirs; port 4567 free.
+  Accepted decisions: 23 router keeps its own port types (one module per template); 24 Pact tests are given
+  like every other practice's tests, with a "write a second interaction" stretch; 24 verify script builds the Go
+  binary instead of `go run` to avoid orphaned providers.
+  Review: RDD off -> disabled/unmanaged.
+
 ## Next step
 
-T6.
+T7.
