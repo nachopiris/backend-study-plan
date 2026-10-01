@@ -47,8 +47,8 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
 
 | ID | Task | Route | Trigger evidence | Status | Commit |
 |----|------|-------|------------------|--------|--------|
-| T1 | Scaffold (root README, shared templates) + Phase 0 practices 01-05 | delegated writer | writer trigger: 2+ non-trivial files | done | see T1 evidence |
-| T2 | Phase 1 practices 06-10 (data systems) | delegated writer | writer trigger | pending | |
+| T1 | Scaffold (root README, shared templates) + Phase 0 practices 01-05 | delegated writer | writer trigger: 2+ non-trivial files | done | c5dc06c |
+| T2 | Phase 1 practices 06-10 (data systems) | delegated writer | writer trigger | done | see T2 evidence |
 | T3 | Phase 2 practices 11-13 (distributed theory) | delegated writer | writer trigger | pending | |
 | T4 | Phase 3 practices 14-17 (resilience) | delegated writer | writer trigger | pending | |
 | T5 | Phase 4 practices 18-21 (messaging) | delegated writer | writer trigger | pending | |
@@ -88,7 +88,14 @@ Out of scope: reference solutions committed to the repo, remote push, PRs.
   Parent spot check: 02 `go vet` clean + `go test` 5x "not implemented"; 03 `node --test` tests 6 / fail 6, no hang.
   Notes: 04 docker-compose exposes Postgres on host port 5433 to avoid clashing with a local 5432.
   Review: RDD off -> disabled/unmanaged.
+- T2 (delegated writer): RED on stubs, GREEN with deleted scratch solutions for 06-10 (real Postgres; 08 real
+  primary/replica via compose with recovery_min_apply_delay=1500ms). Parent spot check: 09 `go vet` clean,
+  `go test` 4 FAIL as designed; no leftover practice containers (only the user's own Supabase stacks run).
+  Accepted decisions: 07 v2 relies on the sync trigger instead of app-level dual writes so it survives the
+  contract step (documented + reflection question); 08 uses docker-compose instead of testcontainers.
+  Compose host ports: 06=5434, 07=5435, 10=5436, 08=5440/5441.
+  Review: RDD off -> disabled/unmanaged.
 
 ## Next step
 
-T2.
+T3.

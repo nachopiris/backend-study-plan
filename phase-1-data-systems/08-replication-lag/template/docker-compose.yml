@@ -1,0 +1,50 @@
+services:
+  primary:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: studyplan
+    ports:
+      - "5440:5432"
+    volumes:
+      - ./primary-init.sh:/docker-entrypoint-initdb.d/00-primary-init.sh:ro
+      - ./migrations/001_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+      - -c
+      - hot_standby=on
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  replica:
+    image: postgres:17
+    depends_on:
+      primary:
+        condition: service_healthy
+    environment:
+      POSTGRES_PASSWORD: postgres
+      PRIMARY_HOST: primary
+      PRIMARY_PORT: "5432"
+      REPL_USER: replicator
+      REPL_PASSWORD: replicator_password
+      RECOVERY_MIN_APPLY_DELAY: 1500ms
+    ports:
+      - "5441:5432"
+    entrypoint: ["/bootstrap-replica.sh"]
+    volumes:
+      - ./bootstrap-replica.sh:/bootstrap-replica.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
