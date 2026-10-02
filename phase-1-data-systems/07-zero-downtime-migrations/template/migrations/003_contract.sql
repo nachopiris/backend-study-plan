@@ -1,0 +1,23 @@
+-- Contract step: once every row has full_name populated (Backfill() has
+-- finished) and app v1 has been fully retired — nothing writes `name`
+-- anymore — remove the old column and the sync machinery, and make
+-- full_name authoritative.
+--
+-- TODO(student):
+--   1. Drop the trigger created in 002_expand.sql, then its function.
+--   2. Drop the `name` column.
+--   3. Add a NOT NULL constraint to full_name — safe now, because Backfill()
+--      already guarantees every row has it set.
+--
+-- This file is applied by the test suite directly (not as a container init
+-- script), after it has verified Backfill() completed successfully — a
+-- contract migration is never safe to run before every writer has stopped
+-- depending on the column it removes. In this practice, app v2
+-- (template/appv2) never wrote to `name` in the first place (see its
+-- package comment for why), so this migration does not affect it; only app
+-- v1 is retired by this point.
+--
+-- As with 002_expand.sql, consider a short `SET lock_timeout = '2s';` before
+-- the ALTER TABLE statements: DROP COLUMN and SET NOT NULL both require an
+-- ACCESS EXCLUSIVE lock, and on a real production table you want to fail
+-- fast and retry rather than block every other query indefinitely.

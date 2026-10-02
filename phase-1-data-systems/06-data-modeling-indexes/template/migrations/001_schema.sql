@@ -1,0 +1,68 @@
+-- Practice 06 schema: the core e-commerce catalog shared across Phase 1
+-- (customers, orders, order_items, payments, inventory).
+--
+-- This schema is the exercise. Write the CREATE TABLE and CREATE INDEX
+-- statements below so that the three queries in queries.go can each be
+-- served by an index over a ~100k-row `orders` table (and comparably sized
+-- `payments` / `inventory` tables) instead of a sequential scan. The test
+-- suite seeds the data and runs EXPLAIN (FORMAT JSON) on each query; a
+-- sequential scan on the big tables fails the test.
+--
+-- Do not rename or remove the tables/columns described below — the Go code
+-- and the tests depend on these exact names. You may add extra columns or
+-- constraints if you want.
+
+-- customers
+--   id            BIGSERIAL PRIMARY KEY
+--   email         TEXT NOT NULL UNIQUE
+--   full_name     TEXT NOT NULL
+--   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+
+-- orders
+--   id            BIGSERIAL PRIMARY KEY
+--   customer_id   BIGINT NOT NULL REFERENCES customers(id)
+--   status        TEXT NOT NULL           -- 'pending' | 'paid' | 'shipped' | 'cancelled'
+--   total_cents   BIGINT NOT NULL
+--   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+--
+--   ListRecentOrders(customerID, limit) needs: the `limit` most recent
+--   orders for one customer, ordered by created_at DESC. Think about which
+--   single index serves both the filter (customer_id) and the ordering
+--   (created_at) without a separate sort step.
+
+-- order_items
+--   id                BIGSERIAL PRIMARY KEY
+--   order_id          BIGINT NOT NULL REFERENCES orders(id)
+--   sku               TEXT NOT NULL
+--   quantity          INT NOT NULL
+--   unit_price_cents  BIGINT NOT NULL
+--
+--   No query in this practice reads order_items directly, but a real
+--   e-commerce schema needs it for order totals and fulfillment. Give it at
+--   least an index that makes "all items of order X" cheap.
+
+-- payments
+--   id            BIGSERIAL PRIMARY KEY
+--   order_id      BIGINT NOT NULL REFERENCES orders(id)
+--   status        TEXT NOT NULL           -- 'pending' | 'completed' | 'failed'
+--   amount_cents  BIGINT NOT NULL
+--   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+--
+--   StalePendingPayments(olderThan) needs: every payment still status =
+--   'pending' with created_at < olderThan. Only a fraction of ~100k rows are
+--   'pending' — think about whether a plain index on status is enough, or
+--   whether a composite or partial index serves this better (and costs less
+--   on every write to `payments`, most of which are not 'pending').
+
+-- inventory
+--   sku       TEXT PRIMARY KEY
+--   quantity  INT NOT NULL
+--
+--   LowStockSKUs(threshold) needs: every sku with quantity <= threshold,
+--   ordered by sku. Seeded with ~50k rows so the planner has a reason to
+--   prefer an index over a sequential scan.
+
+-- TODO(student): write the CREATE TABLE statements for the five tables
+-- above, then the CREATE INDEX statements each of the three queries in
+-- queries.go needs. Fill in template/index-justification.md as you go: one
+-- entry per index, which query it serves, and its cost on writes.

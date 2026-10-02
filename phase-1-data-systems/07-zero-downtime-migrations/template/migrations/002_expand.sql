@@ -1,0 +1,39 @@
+-- Expand step of an expand/contract (a.k.a. parallel change) migration:
+-- rename customers.name to customers.full_name without ever taking the
+-- column, or the application, offline.
+--
+-- This migration must leave the database in a state where BOTH app v1
+-- (template/appv1, which only knows about `name`) and app v2
+-- (template/appv2, which only knows about `full_name`) can run against the
+-- SAME table at the SAME time, each one oblivious to the other's column,
+-- and have their writes become visible to each other.
+--
+-- TODO(student):
+--   1. Add a nullable `full_name TEXT` column to customers (ALTER TABLE ...
+--      ADD COLUMN; no default needed — existing rows will be caught up by
+--      Backfill(), not by this migration).
+--   2. Write a trigger function that runs BEFORE INSERT OR UPDATE and keeps
+--      `name` and `full_name` consistent regardless of which one the
+--      calling application set:
+--        - On INSERT: if only one of the two columns was provided (the
+--          other is NULL), copy the provided value into the missing one.
+--        - On UPDATE: figure out which column actually changed compared to
+--          the OLD row (hint: `NEW.col IS DISTINCT FROM OLD.col`, and the
+--          special variable `TG_OP`) and copy that value into the other
+--          column. Do not just copy name -> full_name unconditionally: app
+--          v2 only ever touches full_name, so unconditionally trusting
+--          `name` would silently throw away v2's writes.
+--   3. Attach the function as a BEFORE INSERT OR UPDATE trigger on
+--      customers.
+--
+-- Rows inserted by 001_initial.sql existed before this trigger did, so after
+-- this migration runs they still have full_name = NULL — that is
+-- intentional. Catching them up is Backfill()'s job (see ../backfill.go),
+-- not this migration's.
+--
+-- Before the ALTER TABLE, consider:
+--   SET lock_timeout = '2s';
+-- Adding a nullable column with no default is normally a fast,
+-- metadata-only change, but it still needs a brief ACCESS EXCLUSIVE lock on
+-- the table — see the README for why that matters and what lock_timeout
+-- buys you here.

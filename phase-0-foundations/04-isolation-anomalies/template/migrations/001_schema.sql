@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS counters (
+    name  TEXT PRIMARY KEY,
+    value BIGINT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS on_call_doctors (
+    doctor_name TEXT PRIMARY KEY,
+    on_call     BOOLEAN NOT NULL DEFAULT TRUE
+);

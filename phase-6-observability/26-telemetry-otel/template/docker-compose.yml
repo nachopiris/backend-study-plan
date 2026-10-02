@@ -1,0 +1,28 @@
+# All-in-one observability backend for the MANUAL exploration part of this practice (see the
+# README's "Exploración manual" section): grafana/otel-lgtm bundles an OTel Collector (receiving
+# OTLP on 4317/grpc and 4318/http), Tempo (traces), Loki (logs), Prometheus (metrics) and Grafana
+# (UI), already wired together, so you can send a real span from a scratch program and see it show
+# up in a trace explorer without standing up five separate containers.
+#
+# This is NOT used by this practice's `go test ./...` / `node --test` suites — those use the
+# OpenTelemetry SDK's own in-memory test doubles (tracetest.SpanRecorder, sdk/metric's
+# ManualReader, InMemorySpanExporter) and need neither Docker nor a network call. This compose
+# file exists only for the hands-on exploration step.
+#
+# Host ports are non-default to avoid clashing with ports already used elsewhere on a learner's
+# machine (see this repo's other practices, several of which bind to 54321-54329, 19092, etc.):
+#   13000 -> Grafana UI (3000 in the container)
+#   14317 -> OTLP gRPC receiver (4317 in the container)
+#   14318 -> OTLP HTTP receiver (4318 in the container)
+services:
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    ports:
+      - "13000:3000"
+      - "14317:4317"
+      - "14318:4318"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:13133/ready || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30

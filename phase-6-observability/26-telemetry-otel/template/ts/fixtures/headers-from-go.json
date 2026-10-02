@@ -1,0 +1,7 @@
+{
+  "description": "A plain-object simulation of the message headers a Go producer's InjectToMessage (see ../../go/carrier.go) would have written before publishing to Kafka, decoded from bytes to UTF-8 strings on this (consumer) side. The traceparent value is the W3C Trace Context spec's own worked example (https://www.w3.org/TR/trace-context/#examples-of-http-traceparent-headers): trace-id 4bf92f3577b34da6a3ce929d0e0e4736, parent-id 00f067aa0ba902b7, sampled flag 01 — picked here so the fixture is independently verifiable against the spec instead of an arbitrary value. Both the Go and the TS sides of this practice implement the SAME W3C format, which is the whole point of this fixture: it proves extractFromMessage understands a trace context regardless of which language produced it.",
+  "expectedTraceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "headers": {
+    "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+  }
+}

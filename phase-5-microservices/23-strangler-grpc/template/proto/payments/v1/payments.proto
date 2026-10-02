@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package payments.v1;
+
+option go_package = "studyplan/phase5/strangler/gen/payments/v1;paymentsv1";
+
+// PaymentsService is the new, standalone payments service this practice extracts from the
+// monolith's legacy in-process payments module via a strangler fig migration (see
+// template/internal/router).
+service PaymentsService {
+  // Charge attempts to charge a customer. It is idempotent: calling Charge again with the same
+  // idempotency_key, customer_id, and amount_cents returns the same result as the first call.
+  rpc Charge(ChargeRequest) returns (ChargeResponse);
+
+  // Refund reverses a previous charge by receipt_id. It is idempotent on idempotency_key, the
+  // same way Charge is.
+  rpc Refund(RefundRequest) returns (RefundResponse);
+}
+
+message ChargeRequest {
+  string customer_id = 1;
+  int64 amount_cents = 2;
+  // idempotency_key makes retries of this exact charge safe: the same key always maps to the
+  // same outcome, so a caller that times out waiting for a response can safely retry with the
+  // same key instead of risking a double charge.
+  string idempotency_key = 3;
+}
+
+message ChargeResponse {
+  string receipt_id = 1;
+  int64 amount_cents = 2;
+}
+
+message RefundRequest {
+  string receipt_id = 1;
+  string idempotency_key = 2;
+}
+
+message RefundResponse {
+  string refund_id = 1;
+  int64 amount_cents = 2;
+}

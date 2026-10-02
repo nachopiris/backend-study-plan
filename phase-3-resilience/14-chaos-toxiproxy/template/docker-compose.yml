@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: studyplan
+      POSTGRES_PASSWORD: studyplan
+      POSTGRES_DB: studyplan
+    ports:
+      - "5450:5432"
+    volumes:
+      - ./migrations/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studyplan"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  payment-provider:
+    build: ./paymentprovider
+    environment:
+      PORT: "9090"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:9090/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.12.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      payment-provider:
+        condition: service_healthy
+    command: ["-host=0.0.0.0", "-config=/etc/toxiproxy.json"]
+    volumes:
+      - ./toxiproxy.json:/etc/toxiproxy.json:ro
+    ports:
+      - "8474:8474"   # Toxiproxy control API
+      - "15450:15432" # proxied Postgres
+      - "18450:18080" # proxied payment provider

@@ -1,0 +1,16 @@
+{
+  "name": "@studyplan/phase3-circuit-breaker-bulkhead",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Practice 16 (TypeScript side): a resilient HTTP client built by composing cockatiel policies.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=26"
+  },
+  "dependencies": {
+    "cockatiel": "^4.0.0"
+  }
+}
